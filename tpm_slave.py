@@ -9,7 +9,6 @@ app = Flask(__name__)
 
 AK_CTX = "0x81000002"  # Persistent handle of Attestation Key on Pi
 
-# Optional: full paths to tpm2 tools (makes it more robust in Flask)
 TPM2_QUOTE = shutil.which("tpm2_quote") or "tpm2_quote"
 TPM2_PCRREAD = shutil.which("tpm2_pcrread") or "tpm2_pcrread"
 
