@@ -83,6 +83,33 @@ def trigger_ota_update():
         print("[-] OTA Update Trigger Failed:", e)
 
 # ----------------------------
+# New Function: Update Golden PCRs
+# ----------------------------
+def update_golden_pcrs():
+    print("[*] Fetching current PCR values from Raspberry Pi...")
+    try:
+        data = fetch_quote()
+        pcrs = data.get("pcr_values", {})
+        if not pcrs:
+            print("[-] No PCR data received from API.")
+            return
+
+        # Filter only whitelist PCRs
+        golden_data = {idx: pcrs[idx] for idx in PCR_WHITELIST if idx in pcrs}
+
+        # Write to JSON file
+        with open(GOLDEN_PCR_FILE, "w") as f:
+            json.dump(golden_data, f, indent=4)
+
+        print("[+] Golden PCR values updated successfully:")
+        for idx, val in golden_data.items():
+            print(f"  PCR {idx}: {val}")
+
+    except Exception as e:
+        print("[-] Failed to update golden PCRs:", e)
+
+
+# ----------------------------
 # PCR Verification Flow
 # ----------------------------
 def run_pcr_check():
@@ -117,7 +144,8 @@ if __name__ == "__main__":
         print("===============================")
         print("1. Verify PCR Quote and Check Trust")
         print("2. Trigger OTA Firmware Update")
-        print("3. Exit")
+        print("3. Update Golden PCR Values")
+        print("4. Exit")
         print("===============================")
 
         choice = input("Enter your choice: ").strip()
@@ -127,6 +155,8 @@ if __name__ == "__main__":
         elif choice == "2":
             trigger_ota_update()
         elif choice == "3":
+            update_golden_pcrs()
+        elif choice == "4":
             print("Exiting...")
             break
         else:
