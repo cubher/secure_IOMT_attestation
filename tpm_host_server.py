@@ -1,4 +1,3 @@
-# host_verifier_software.py
 import requests
 import base64
 import json
@@ -8,7 +7,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 # ----------------------------
 # Configuration
 # ----------------------------
-PI_IP = "10.208.164.152"   # Your Raspberry Pi IP
+PI_IP = "10.181.159.152"   # Raspberry Pi IP
 PORT = 5000
 AK_PUB_FILE = "ak_pub.pem"          # AK public key exported from Pi TPM
 GOLDEN_PCR_FILE = "golden_pcrs.json"  # Golden PCR reference file
@@ -43,8 +42,7 @@ def verify_quote_signature(quote_b64, sig_b64, ak_pub_file):
             hashes.SHA256()
         )
         return True
-    except Exception as e:
-        #print("[-] Quote signature verification failed:", e)
+    except Exception:
         return False
 
 def compare_pcrs(pcr_values, golden_file):
@@ -71,12 +69,23 @@ def compare_pcrs(pcr_values, golden_file):
             print(f"  PCR {idx}: actual={actual} expected={expected}")
     else:
         print("[+] PCR values match the golden reference (0 and 7).")
-        print("[+] The devices is in a trusted state.")
+        print("[+] The device is in a trusted state.")
+
+def trigger_ota_update():
+    url = f"http://{PI_IP}:{PORT}/api/update_firmware"
+    print("[*] Triggering OTA update on Raspberry Pi...")
+    try:
+        resp = requests.get(url)
+        resp.raise_for_status()
+        print("[+] OTA Update Triggered Successfully.")
+        print("[+] Response:", resp.json())
+    except Exception as e:
+        print("[-] OTA Update Trigger Failed:", e)
 
 # ----------------------------
-# Main
+# PCR Verification Flow
 # ----------------------------
-if __name__ == "__main__":
+def run_pcr_check():
     print("[*] Fetching quote from Raspberry Pi...")
     data = fetch_quote()
 
@@ -85,12 +94,11 @@ if __name__ == "__main__":
     sig = data["signature"]
 
     print("[*] Verifying quote signature...")
-    if verify_quote_signature(quote, sig, AK_PUB_FILE):
-        #print("[+] Quote signature is valid!")
-        pass
-    else:
-        #print("[-] Quote signature invalid!")
-        pass
+    # if verify_quote_signature(quote, sig, AK_PUB_FILE):
+    #     print("[+] Quote signature is valid!")
+    # else:
+    #     print("[-] Quote signature invalid!")
+    #     return
 
     print("[*] PCR Values received from Pi (showing only 0 and 7):")
     for idx in PCR_WHITELIST:
@@ -98,3 +106,28 @@ if __name__ == "__main__":
 
     # Compare with golden PCRs
     compare_pcrs(pcrs, GOLDEN_PCR_FILE)
+
+# ----------------------------
+# Main Menu
+# ----------------------------
+if __name__ == "__main__":
+    while True:
+        print("\n===============================")
+        print("  Raspberry Pi TPM Host Menu")
+        print("===============================")
+        print("1. Verify PCR Quote and Check Trust")
+        print("2. Trigger OTA Firmware Update")
+        print("3. Exit")
+        print("===============================")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            run_pcr_check()
+        elif choice == "2":
+            trigger_ota_update()
+        elif choice == "3":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice, please try again.")

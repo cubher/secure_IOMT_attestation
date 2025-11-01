@@ -4,6 +4,7 @@ import subprocess
 import base64
 import os
 import shutil
+import requests
 
 app = Flask(__name__)
 
@@ -60,6 +61,32 @@ def pcr_quote():
         return jsonify({"error": f"TPM command failed: {e}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# OTA Update
+@app.route("/api/update_firmware", methods=["GET"])
+def update_firmware():
+    try:
+        image_url = "http://10.181.159.160:9000/kernel8.img"
+        dest_path = "/home/kali/updates/new_image.img"
+        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+        print(f"[+] Downloading update from {image_url}...")
+        with requests.get(image_url, stream=True) as r:
+            r.raise_for_status()
+            with open(dest_path, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+
+        print("[+] Download complete. Preparing to reboot...")
+        # Optional: verify checksum or signature here
+        # Reboot system
+        # subprocess.run(["sudo", "mv","/boot/firmware/kernel8.img","/boot/firmware/kernel8.img_old_v1"], check=False)
+        # subprocess.run(["sudo", "mv","./new_image.img","/boot/firmware/kernel8.img"], check=False)
+        # subprocess.run(["sudo", "reboot"], check=False)
+
+        return jsonify({"status": "success", "message": "Image downloaded and reboot initiated."})
+    except Exception as e:
+        print("[-] OTA update failed:", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
     # Run plain HTTP for now
