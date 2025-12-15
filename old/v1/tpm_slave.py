@@ -66,7 +66,7 @@ def pcr_quote():
 @app.route("/api/update_firmware", methods=["GET"])
 def update_firmware():
     try:
-        image_url = "http://10.181.159.160:9000/kernel8.img"
+        image_url = "http://10.250.149.159:9000/kernel8.img"
         dest_path = "/home/kali/updates/new_image.img"
         os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 

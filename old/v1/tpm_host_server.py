@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 # ----------------------------
 # Configuration
 # ----------------------------
-PI_IP = "10.181.159.152"   # Raspberry Pi IP
+PI_IP = "10.250.149.152"   # Raspberry Pi IP
 PORT = 5000
 AK_PUB_FILE = "ak_pub.pem"          # AK public key exported from Pi TPM
 GOLDEN_PCR_FILE = "golden_pcrs.json"  # Golden PCR reference file
