@@ -32,6 +32,15 @@ TPM2_QUOTE = shutil.which("tpm2_quote") or "tpm2_quote"
 TPM2_PCRREAD = shutil.which("tpm2_pcrread") or "tpm2_pcrread"
 TPM2_READPUBLIC = shutil.which("tpm2_readpublic") or "tpm2_readpublic"
 
+    
+# ============================================
+# CONFIGURATION FLAGS (Set to True to enable)
+# ============================================
+ENABLE_BACKUP = False    # Set True to backup current kernel
+ENABLE_APPLY = False     # Set True to apply the update
+ENABLE_REBOOT = False    # Set True to reboot after update
+
+
 app = Flask(__name__)
 
 # ============================================
@@ -451,7 +460,9 @@ def ota_update():
 
 def perform_ota_update(update_id: str, firmware_url: str):
     """Perform OTA update in background"""
+
     try:
+        print(f"\n[========== OTA UPDATE: {update_id} ==========]")
         print(f"[*] Starting OTA update {update_id}")
         
         # Download firmware
@@ -481,29 +492,64 @@ def perform_ota_update(update_id: str, firmware_url: str):
         print(f"[+] File size: {file_size} bytes")
         
         # Backup current kernel
-        print("[*] Backing up current kernel...")
-        if os.path.exists("/boot/firmware/kernel8.img"):
-            backup_cmd = ["sudo", "cp", "/boot/firmware/kernel8.img", "/boot/firmware/kernel8.img.backup"]
-            subprocess.run(backup_cmd, capture_output=True)
+        if ENABLE_BACKUP:
+            print("[*] Backing up current kernel...")
+            if os.path.exists("/boot/firmware/kernel8.img"):
+                backup_cmd = ["sudo", "cp", "/boot/firmware/kernel8.img", "/boot/firmware/kernel8.img.backup"]
+                result = subprocess.run(backup_cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    print("[+] Current kernel backed up successfully")
+                else:
+                    print(f"[-] Backup failed: {result.stderr}")
+            else:
+                print("[-] Current kernel not found at /boot/firmware/kernel8.img")
+        else:
+            print("[*] Backup: DISABLED (Set ENABLE_BACKUP=True to enable)")
         
         # Apply update
-        print("[*] Applying firmware update...")
-        apply_cmd = ["sudo", "cp", dest_path, "/boot/firmware/kernel8.img"]
-        result = subprocess.run(apply_cmd, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            print("[+] Firmware update applied successfully")
+        if ENABLE_APPLY:
+            print("[*] Applying firmware update...")
+            apply_cmd = ["sudo", "cp", dest_path, "/boot/firmware/kernel8.img"]
+            result = subprocess.run(apply_cmd, capture_output=True, text=True)
             
-            # Verify the update
-            verify_cmd = ["ls", "-la", "/boot/firmware/kernel8.img"]
-            subprocess.run(verify_cmd)
-            
-            print("[*] Update complete. System ready for reboot.")
-            # Uncomment to reboot: subprocess.run(["sudo", "reboot"])
+            if result.returncode == 0:
+                print("[+] Firmware update applied successfully")
+                
+                # Verify the update
+                print("[*] Verifying update...")
+                verify_cmd = ["ls", "-la", "/boot/firmware/kernel8.img"]
+                subprocess.run(verify_cmd)
+                
+                print("[*] Update complete.")
+            else:
+                print(f"[-] Failed to apply update: {result.stderr}")
         else:
-            print(f"[-] Failed to apply update: {result.stderr}")
+            print("[*] Apply update: DISABLED (Set ENABLE_APPLY=True to enable)")
+        
+        # Reboot system
+        if ENABLE_REBOOT:
+            print("[*] System will reboot in 10 seconds...")
+            time.sleep(10)
+            reboot_cmd = ["sudo", "reboot"]
+            result = subprocess.run(reboot_cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                print("[+] Reboot command sent successfully")
+            else:
+                print(f"[-] Reboot failed: {result.stderr}")
+        else:
+            print("[*] Reboot: DISABLED (Set ENABLE_REBOOT=True to enable)")
+        
+        print(f"\n[========== OTA COMPLETE ==========]")
+        print(f"[*] Update ID: {update_id}")
+        print(f"[*] Downloaded to: {dest_path}")
+        print(f"[*] File size: {file_size} bytes")
+        print("[*] Configuration:")
+        print(f"    - Backup enabled: {ENABLE_BACKUP}")
+        print(f"    - Apply enabled: {ENABLE_APPLY}")
+        print(f"    - Reboot enabled: {ENABLE_REBOOT}")
         
     except Exception as e:
+        print(f"\n[========== OTA FAILED ==========]")
         print(f"[-] OTA update failed: {e}")
         import traceback
         traceback.print_exc()
