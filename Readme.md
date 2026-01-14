@@ -69,6 +69,7 @@ During boot, U-Boot:
 
 This establishes a **static Root of Trust for Measurement (RTM)**.
 
+Refer: https://github.com/joholl/rpi4-uboot-tpm
 ---
 
 ## TPM Provisioning
@@ -149,7 +150,7 @@ Trust decision is binary:
 
 ## Attestation-Gated OTA Updates
 
-OTA updates are **not allowed by default**.
+OTA updates are done by using **private key authentication**.
 
 Flow:
 1. Verifier validates attestation
