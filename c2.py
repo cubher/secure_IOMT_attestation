@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # For AES-GCM
 # ============================================
 # CONFIGURATION
 # ============================================
-PI_IP = "10.250.149.152"
+PI_IP = "10.196.192.152"
 PI_PORT = 4000
 BASE_URL = f"http://{PI_IP}:{PI_PORT}"
 
