@@ -70,6 +70,7 @@ During boot, U-Boot:
 This establishes a **static Root of Trust for Measurement (RTM)**.
 
 Refer: https://github.com/joholl/rpi4-uboot-tpm
+
 ---
 
 ## TPM Provisioning
