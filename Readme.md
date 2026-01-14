@@ -209,14 +209,4 @@ User=root
 - First-stage Pi bootloader remains unmeasured
 - OTA signature verification can be extended
 
----
-
-## Author
-
-**Cubher**  
-Embedded & IoT Security | TPM | Firmware Attestation
-
----
-
-⭐ Star the repo if you are interested in TPM-based embedded security
 
