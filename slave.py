@@ -38,7 +38,7 @@ TPM2_READPUBLIC = shutil.which("tpm2_readpublic") or "tpm2_readpublic"
 # ============================================
 ENABLE_BACKUP = False    # Set True to backup current kernel
 ENABLE_APPLY = False     # Set True to apply the update
-ENABLE_REBOOT = False    # Set True to reboot after update
+ENABLE_REBOOT = True    # Set True to reboot after update
 
 
 app = Flask(__name__)
@@ -528,8 +528,8 @@ def perform_ota_update(update_id: str, firmware_url: str):
         
         # Reboot system
         if ENABLE_REBOOT:
-            print("[*] System will reboot in 10 seconds...")
-            time.sleep(10)
+            print("[*] System will reboot in 5 seconds...")
+            time.sleep(5)
             reboot_cmd = ["sudo", "reboot"]
             result = subprocess.run(reboot_cmd, capture_output=True, text=True)
             if result.returncode == 0:

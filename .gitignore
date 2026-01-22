@@ -1,5 +1,5 @@
 .venv
 ./ak_pub.pem
 ./cert.pem
-./old
+old
 ./c2_priv.pem

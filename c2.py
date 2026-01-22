@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # For AES-GCM
 # ============================================
 # CONFIGURATION
 # ============================================
-PI_IP = "10.196.192.152"
+PI_IP = "10.208.39.152"
 PI_PORT = 4000
 BASE_URL = f"http://{PI_IP}:{PI_PORT}"
 
@@ -23,7 +23,7 @@ PI_PUBLIC_KEY = "tpm.pem"  # Raspberry Pi's public key (from TPM)
 
 GOLDEN_PCR_FILE = "golden_pcrs.json"
 PCR_WHITELIST = ["0", "7"]
-
+OTA_URL = "http://10.208.39.159:9000/kernel8.img"
 # ============================================
 # HELPER FUNCTIONS FOR OPENSSL OPERATIONS (FIXED FOR WINDOWS)
 # ============================================
@@ -302,7 +302,7 @@ def request_pcr_quote() -> Optional[Dict[str, Any]]:
     }
     
     # Encrypt and sign request
-    print("[*] Encrypting and signing request...")
+    print("Encrypting and signing request...")
     encrypted_request = encrypt_and_sign_message(
         request_data,
         PI_PUBLIC_KEY,  # Encrypt with Raspberry Pi's public key
@@ -365,7 +365,7 @@ def trigger_ota_update() -> bool:
     request_data = {
         "command": "ota_update",
         "update_id": update_id,
-        "firmware_url": "http://10.250.149.159:9000/kernel8.img",
+        "firmware_url": OTA_URL,
         "checksum": "",
         "timestamp": str(time.time())
     }
